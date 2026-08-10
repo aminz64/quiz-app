@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پلتفرم آزمون جامع</title>
     <style>
-        body { background-color: #f8fafc; font-family: Tahoma, Arial, sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        body { background-color: #f1f5f9; font-family: Tahoma, Arial, sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .card { background: white; width: 100%; max-width: 600px; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
         h2 { color: #0f172a; margin: 0; font-size: 20px; }
@@ -14,6 +14,7 @@
         .btn { width: 100%; padding: 15px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px;}
         .btn:hover { background: #2563eb; }
         input.name-input { width: 100%; padding: 15px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px; margin-bottom: 20px; box-sizing: border-box; text-align: center; }
+        .subject-title { background: #e0f2fe; color: #0369a1; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: 25px; margin-bottom: 10px; font-size: 15px; border-right: 5px solid #0284c7; }
         .q-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .q-num { font-weight: bold; width: 70px; color: #475569; }
         .options { display: flex; gap: 15px; direction: ltr; }
@@ -37,7 +38,7 @@
 
         <div id="step1" style="display: none;">
             <input type="text" id="studentName" class="name-input" placeholder="نام و نام خانوادگی خود را وارد کنید">
-            <button class="btn" id="startBtn">شروع آزمون</button>
+            <button class="btn" id="startBtn">شروع آزمون جامع</button>
         </div>
 
         <div id="step2">
@@ -52,7 +53,6 @@
         // ===> لینک جدید وب‌هوک گوگل را اینجا قرار دهید <===
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0ajJTUZ1lCRJ-MNrrTrRJmaHxECTblYPVwdTRpk7nmOygDGCaCYvkG1h4L7FAejCzIA/exec';
         
-        // استخراج ID آزمون از لینک (مثلاً ?id=1001)
         const urlParams = new URLSearchParams(window.location.search);
         const currentExamId = urlParams.get('id');
         let qCount = 0;
@@ -62,14 +62,12 @@
         if (!currentExamId) {
             document.getElementById('initMessage').innerText = 'خطا: لینک آزمون معتبر نیست.';
         } else {
-            // دریافت اطلاعات اختصاصی همین آزمون
             fetch(SCRIPT_URL + '?examId=' + currentExamId + '&nocache=' + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
                     if(data.status === "success") {
                         document.getElementById('initMessage').style.display = 'none';
                         document.getElementById('examHeader').style.display = 'flex';
-                        
                         document.getElementById('examTitle').innerText = data.examName;
                         document.getElementById('consName').innerText = 'مشاور: ' + data.consultantName;
                         
@@ -77,19 +75,39 @@
                         examTime = parseInt(data.timeLimit);
                         document.getElementById('timerDisplay').innerText = examTime + ":00";
                         
-                        buildBubbleSheet(qCount);
+                        // ساخت پاسخ‌برگ چند درسه
+                        buildDynamicSheet(qCount, data.subjects);
                         document.getElementById('step1').style.display = 'block';
                     } else {
-                        document.getElementById('initMessage').innerText = 'آزمونی با این شناسه یافت نشد!';
+                        document.getElementById('initMessage').innerText = 'آزمون یافت نشد!';
                     }
                 })
                 .catch(err => { document.getElementById('initMessage').innerText = 'خطای شبکه'; });
         }
 
-        // تابع ساخت پاسخ‌برگ
-        function buildBubbleSheet(count) {
+        // تابع هوشمند تفکیک دروس در پاسخ‌برگ
+        function buildDynamicSheet(totalQuestions, subjectsStr) {
             const container = document.getElementById('bubbleContainer');
-            for(let i = 1; i <= count; i++) {
+            container.innerHTML = "";
+            
+            // ساختن آرایه‌ای از سوالات که بدانیم هر سوال مال چه درسی است
+            let questionMap = new Array(totalQuestions + 1).fill("");
+            let parts = subjectsStr.split(",");
+            
+            parts.forEach(part => {
+                let subName = part.split(":")[0];
+                let range = part.split(":")[1].split("-");
+                let start = parseInt(range[0]);
+                let end = parseInt(range[1]);
+                questionMap[start] = subName; // مارک کردن شروع درس جدید
+            });
+
+            for(let i = 1; i <= totalQuestions; i++) {
+                // اگر این شماره سوال شروع یک درس جدید بود، تیتر درس را اضافه کن
+                if(questionMap[i] !== "") {
+                    container.innerHTML += `<div class="subject-title">دفترچه درس: ${questionMap[i]}</div>`;
+                }
+                
                 container.innerHTML += `
                     <div class="q-row">
                         <div class="q-num">سوال ${i}</div>
@@ -104,9 +122,8 @@
             }
         }
 
-        // شروع تایمر و آزمون
         document.getElementById('startBtn').addEventListener('click', () => {
-            if(document.getElementById('studentName').value.trim() === '') return alert('نام را وارد کنید');
+            if(document.getElementById('studentName').value.trim() === '') return alert('لطفاً نام را وارد کنید');
             document.getElementById('step1').style.display = 'none';
             document.getElementById('step2').style.display = 'block';
             startTimer(examTime * 60);
@@ -121,13 +138,12 @@
                 display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
                 if (--timer < 0) {
                     clearInterval(timerInterval);
-                    alert('زمان آزمون به پایان رسید! پاسخ‌برگ شما به صورت خودکار ثبت می‌شود.');
+                    alert('زمان آزمون به پایان رسید!');
                     submitExam();
                 }
             }, 1000);
         }
 
-        // ارسال فرم
         document.getElementById('submitBtn').addEventListener('click', () => {
             if(confirm('آیا از ثبت نهایی پاسخ‌برگ اطمینان دارید؟')) submitExam();
         });
@@ -137,7 +153,7 @@
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('step2').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
-            document.getElementById('loading').innerText = 'در حال تصحیح...';
+            document.getElementById('loading').innerText = 'در حال تصحیح جامع آزمون...';
 
             let answersStr = "";
             for(let i = 1; i <= qCount; i++) {
@@ -153,9 +169,9 @@
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
                 .then(() => {
                     document.getElementById('loading').style.color = '#10b981';
-                    document.getElementById('loading').innerText = '✅ خسته نباشید. پاسخ‌برگ شما ثبت شد.';
+                    document.getElementById('loading').innerText = '✅ خسته نباشید. پاسخ‌برگ جامع شما با موفقیت ثبت شد.';
                 })
-                .catch(() => alert('خطا در ارسال'));
+                .catch(() => alert('خطا در ارسال داده‌ها'));
         }
     </script>
 </body>
