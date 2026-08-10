@@ -3,104 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>آزمون آنلاین</title>
+    <title>پاسخ‌برگ آنلاین</title>
     <style>
-        body { font-family: Tahoma, Arial; background-color: #f8fafc; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .info-box { margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box;}
-        .question-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-        .question-num { font-weight: bold; width: 60px; color: #334155; }
-        .options { display: flex; gap: 15px; }
-        .options label { cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 14px; }
-        .options input { margin-top: 5px; transform: scale(1.2); cursor: pointer; }
-        button { width: 100%; padding: 12px; background-color: #0ea5e9; color: white; border: none; border-radius: 5px; font-size: 16px; margin-top: 20px; cursor: pointer; }
-        button:hover { background-color: #0284c7; }
-        #loading { text-align: center; color: #64748b; font-weight: bold; }
+        body { 
+            background-color: #f1f5f9; 
+            font-family: Tahoma, Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            padding: 20px; 
+            margin: 0;
+        }
+        .card { 
+            background: white; 
+            width: 100%; 
+            max-width: 500px; 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+        }
+        h2 { 
+            color: #1e293b; 
+            text-align: center; 
+            margin-top: 0; 
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #e2e8f0;
+        }
+        
+        /* دکمه‌ها و فرم‌ها */
+        .btn { 
+            width: 100%; 
+            padding: 15px; 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+        .btn:hover { background: #2563eb; }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        
+        input.name-input { 
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid #cbd5e1; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            margin-bottom: 20px; 
+            box-sizing: border-box;
+            outline: none;
+            text-align: center;
+        }
+        input.name-input:focus { border-color: #3b82f6; }
+
+        /* استایل شیکِ پاسخ‌برگ حباب‌دار */
+        .q-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 0; 
+            border-bottom: 1px solid #f1f5f9; 
+        }
+        .q-num { 
+            font-weight: bold; 
+            font-size: 16px; 
+            width: 70px; 
+            color: #475569; 
+        }
+        .options { 
+            display: flex; 
+            gap: 15px; 
+            direction: ltr; /* گزینه‌ها از چپ به راست مرتب شوند */
+        }
+        .option-btn {
+            width: 38px; 
+            height: 38px; 
+            border-radius: 50%; 
+            border: 2px solid #cbd5e1;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            font-weight: bold; 
+            color: #64748b; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        /* مخفی کردن رادیوباتن پیش‌فرض و استفاده از دایره‌های سفارشی */
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + .option-btn { 
+            background: #1e293b; 
+            border-color: #1e293b; 
+            color: white; 
+        }
+
+        /* کنترل نمایش مراحل */
+        #step2, #loading { display: none; }
     </style>
 </head>
 <body>
+    <div class="card">
+        <h2 id="examTitle">در حال ارتباط با سرور...</h2>
 
-<div class="container">
-    <h2 id="examTitle">در حال دریافت اطلاعات آزمون...</h2>
-    
-    <div id="loading">لطفاً چند لحظه صبر کنید...</div>
-
-    <form id="quizForm" style="display: none;">
-        <div class="info-box">
-            <label>نام و نام خانوادگی:</label>
-            <input type="text" id="studentName" required placeholder="مثال: محمد امین زیلابی">
+        <div id="step1">
+            <p style="text-align:center; color:#64748b; margin-bottom: 25px; font-size: 14px;">
+                برای ورود به جلسه آزمون، نام و نام خانوادگی خود را وارد کنید
+            </p>
+            <input type="text" id="studentName" class="name-input" placeholder="مثلاً: محمد امین زیلابی">
+            <button class="btn" id="startBtn" disabled>شروع آزمون</button>
         </div>
 
-        <div id="bubbleSheet">
-            </div>
+        <div id="step2">
+            <div id="bubbleContainer" style="margin-bottom: 30px;">
+                </div>
+            <button class="btn" id="submitBtn" style="background: #10b981;">پایان آزمون و ثبت نهایی</button>
+        </div>
 
-        <button type="submit" id="submitBtn">پایان آزمون و ارسال پاسخ‌برگ</button>
-    </form>
-    <div id="statusMessage" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
-</div>
+        <div id="loading" style="text-align:center; font-weight:bold; color:#3b82f6; margin-top:20px; font-size: 16px;">
+            لطفاً منتظر بمانید...
+        </div>
+    </div>
 
-<script>
-    // لینک جدیدی که از Apps Script گرفتید را اینجا بگذارید
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0ajJTUZ1lCRJ-MNrrTrRJmaHxECTblYPVwdTRpk7nmOygDGCaCYvkG1h4L7FAejCzIA/exec';
-    let questionCount = 0;
+    <script>
+        // ===> لینک وب‌هوک جدید گوگل شیت خود را اینجا بگذارید <===
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0ajJTUZ1lCRJ-MNrrTrRJmaHxECTblYPVwdTRpk7nmOygDGCaCYvkG1h4L7FAejCzIA/exec';
+        let qCount = 0;
 
-    // دریافت اطلاعات آزمون از اکسل هنگام لود شدن صفحه
-    fetch(SCRIPT_URL)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('examTitle').innerText = 'آزمون: ' + data.examName;
-            questionCount = data.qCount;
-            generateBubbleSheet(questionCount);
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('quizForm').style.display = 'block';
+        // 1. دریافت اطلاعات آزمون هنگام باز شدن سایت
+        fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('examTitle').innerText = data.examName;
+                qCount = data.qCount;
+                buildBubbleSheet(qCount); // ساخت پاسخ‌برگ
+                document.getElementById('startBtn').disabled = false; // فعال شدن دکمه شروع
+            })
+            .catch(err => {
+                document.getElementById('examTitle').innerText = 'خطا در دریافت اطلاعات';
+            });
+
+        // 2. رفتن به مرحله بعد (شروع آزمون)
+        document.getElementById('startBtn').addEventListener('click', () => {
+            const nameInput = document.getElementById('studentName').value.trim();
+            if(nameInput === '') { 
+                alert('لطفاً نام خود را وارد کنید!'); 
+                return; 
+            }
+            // مخفی کردن صفحه اول و نمایش پاسخ‌برگ
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
         });
 
-    // تابع ساخت پاسخ‌برگ
-    function generateBubbleSheet(count) {
-        const container = document.getElementById('bubbleSheet');
-        for (let i = 1; i <= count; i++) {
-            let row = `<div class="question-row">
-                <div class="question-num">سوال ${i}</div>
-                <div class="options">
-                    <label>۱<input type="radio" name="q${i}" value="1"></label>
-                    <label>۲<input type="radio" name="q${i}" value="2"></label>
-                    <label>۳<input type="radio" name="q${i}" value="3"></label>
-                    <label>۴<input type="radio" name="q${i}" value="4"></label>
-                </div>
-            </div>`;
-            container.innerHTML += row;
-        }
-    }
-
-    // ارسال فرم
-    document.getElementById('quizForm').addEventListener('submit', e => {
-        e.preventDefault();
-        
-        document.getElementById('submitBtn').disabled = true;
-        document.getElementById('statusMessage').innerText = 'در حال تصحیح و ثبت...';
-
-        // استخراج پاسخ‌ها (اگر خالی بود 0 می‌گذارد)
-        let answersString = "";
-        for (let i = 1; i <= questionCount; i++) {
-            let selected = document.querySelector(`input[name="q${i}"]:checked`);
-            answersString += selected ? selected.value : "0";
+        // 3. تابع ساخت پاسخ‌برگ حباب‌دار (مثل کنکور)
+        function buildBubbleSheet(count) {
+            const container = document.getElementById('bubbleContainer');
+            for(let i = 1; i <= count; i++) {
+                container.innerHTML += `
+                    <div class="q-row">
+                        <div class="q-num">سوال ${i}</div>
+                        <div class="options">
+                            <label><input type="radio" name="q${i}" value="1"><div class="option-btn">1</div></label>
+                            <label><input type="radio" name="q${i}" value="2"><div class="option-btn">2</div></label>
+                            <label><input type="radio" name="q${i}" value="3"><div class="option-btn">3</div></label>
+                            <label><input type="radio" name="q${i}" value="4"><div class="option-btn">4</div></label>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
-        const formData = new FormData();
-        formData.append('studentName', document.getElementById('studentName').value);
-        formData.append('answers', answersString);
+        // 4. ارسال نهایی پاسخ‌برگ به گوگل شیت
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            // غیرفعال کردن دکمه برای جلوگیری از چندبار کلیک کردن
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            document.getElementById('loading').style.display = 'block';
 
-        fetch(SCRIPT_URL, { method: 'POST', body: formData })
-            .then(response => {
-                document.getElementById('statusMessage').style.color = 'green';
-                document.getElementById('statusMessage').innerText = '✅ پاسخ‌برگ ثبت شد. خسته نباشید!';
-                document.getElementById('quizForm').reset();
-            })
-            .catch(error => alert('خطا در ارتباط با سرور!'));
-    });
-</script>
+            // خواندن تمام گزینه‌های انتخاب شده
+            let answersStr = "";
+            for(let i = 1; i <= qCount; i++) {
+                const checkedOption = document.querySelector(`input[name="q${i}"]:checked`);
+                answersStr += checkedOption ? checkedOption.value : "0";
+            }
 
+            // آماده‌سازی داده‌ها برای ارسال
+            const formData = new FormData();
+            formData.append('studentName', document.getElementById('studentName').value);
+            formData.append('answers', answersStr);
+
+            // ارسال به سرور
+            fetch(SCRIPT_URL, { method: 'POST', body: formData })
+                .then(res => res.text())
+                .then(text => {
+                    document.getElementById('step2').style.display = 'none';
+                    document.getElementById('loading').style.color = '#10b981';
+                    document.getElementById('loading').innerText = '✅ پاسخ‌برگ شما با موفقیت تصحیح و ثبت شد. خسته نباشید!';
+                })
+                .catch(err => {
+                    alert('خطا در ارسال! لطفاً اتصال اینترنت خود را بررسی کنید.');
+                    submitBtn.disabled = false;
+                    document.getElementById('loading').style.display = 'none';
+                });
+        });
+    </script>
 </body>
 </html>
