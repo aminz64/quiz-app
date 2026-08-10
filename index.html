@@ -3,123 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>آزمون آنلاین - گروه مشاوره</title>
+    <title>آزمون آنلاین</title>
     <style>
-        body {
-            font-family: Tahoma, Arial, sans-serif;
-            background-color: #f1f5f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            margin: 0;
-        }
-        .container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 450px;
-            width: 100%;
-        }
-        h2 {
-            text-align: center;
-            color: #0f172a;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #334155;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #06b6d4;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0891b2;
-        }
-        #statusMessage {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
+        body { font-family: Tahoma, Arial; background-color: #f8fafc; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .info-box { margin-bottom: 20px; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box;}
+        .question-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .question-num { font-weight: bold; width: 60px; color: #334155; }
+        .options { display: flex; gap: 15px; }
+        .options label { cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 14px; }
+        .options input { margin-top: 5px; transform: scale(1.2); cursor: pointer; }
+        button { width: 100%; padding: 12px; background-color: #0ea5e9; color: white; border: none; border-radius: 5px; font-size: 16px; margin-top: 20px; cursor: pointer; }
+        button:hover { background-color: #0284c7; }
+        #loading { text-align: center; color: #64748b; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>پاسخ‌برگ آزمون آنلاین</h2>
-    <form id="quizForm">
-        <div class="form-group">
-            <label for="studentName">نام و نام خانوادگی دانش‌آموز:</label>
-            <input type="text" id="studentName" required placeholder="مثلاً: علی رضایی">
+    <h2 id="examTitle">در حال دریافت اطلاعات آزمون...</h2>
+    
+    <div id="loading">لطفاً چند لحظه صبر کنید...</div>
+
+    <form id="quizForm" style="display: none;">
+        <div class="info-box">
+            <label>نام و نام خانوادگی:</label>
+            <input type="text" id="studentName" required placeholder="مثال: محمد امین زیلابی">
         </div>
 
-        <div class="form-group">
-            <label for="physicsScore">درصد یا تعداد پاسخ‌های صحیح:</label>
-            <input type="text" id="physicsScore" required placeholder="مثلاً: ۷۵٪">
-        </div>
+        <div id="bubbleSheet">
+            </div>
 
-        <button type="submit" id="submitBtn">ثبت و ارسال پاسخ‌برگ</button>
+        <button type="submit" id="submitBtn">پایان آزمون و ارسال پاسخ‌برگ</button>
     </form>
-    <div id="statusMessage"></div>
+    <div id="statusMessage" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
 </div>
 
 <script>
-    // لینک وب‌هوک گوگل شیت خود را که در گام اول گرفتید، بین دو کوتیشن زیر قرار دهید:
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyeWbosyV3hAM4Ass37o-Y1LDnxqReELXIXmvK4FrCyZqWVKUolArsyIRPt5O1JO0E1/exec';
+    // لینک جدیدی که از Apps Script گرفتید را اینجا بگذارید
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0ajJTUZ1lCRJ-MNrrTrRJmaHxECTblYPVwdTRpk7nmOygDGCaCYvkG1h4L7FAejCzIA/exec';
+    let questionCount = 0;
 
-    const form = document.getElementById('quizForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const statusMessage = document.getElementById('statusMessage');
+    // دریافت اطلاعات آزمون از اکسل هنگام لود شدن صفحه
+    fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('examTitle').innerText = 'آزمون: ' + data.examName;
+            questionCount = data.qCount;
+            generateBubbleSheet(questionCount);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('quizForm').style.display = 'block';
+        });
 
-    form.addEventListener('submit', e => {
+    // تابع ساخت پاسخ‌برگ
+    function generateBubbleSheet(count) {
+        const container = document.getElementById('bubbleSheet');
+        for (let i = 1; i <= count; i++) {
+            let row = `<div class="question-row">
+                <div class="question-num">سوال ${i}</div>
+                <div class="options">
+                    <label>۱<input type="radio" name="q${i}" value="1"></label>
+                    <label>۲<input type="radio" name="q${i}" value="2"></label>
+                    <label>۳<input type="radio" name="q${i}" value="3"></label>
+                    <label>۴<input type="radio" name="q${i}" value="4"></label>
+                </div>
+            </div>`;
+            container.innerHTML += row;
+        }
+    }
+
+    // ارسال فرم
+    document.getElementById('quizForm').addEventListener('submit', e => {
         e.preventDefault();
+        
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('statusMessage').innerText = 'در حال تصحیح و ثبت...';
 
-        submitBtn.disabled = true;
-        submitBtn.innerText = 'در حال ارسال...';
-        statusMessage.style.color = '#334155';
-        statusMessage.innerText = 'لطفاً چند لحظه صبر کنید...';
+        // استخراج پاسخ‌ها (اگر خالی بود 0 می‌گذارد)
+        let answersString = "";
+        for (let i = 1; i <= questionCount; i++) {
+            let selected = document.querySelector(`input[name="q${i}"]:checked`);
+            answersString += selected ? selected.value : "0";
+        }
 
         const formData = new FormData();
         formData.append('studentName', document.getElementById('studentName').value);
-        formData.append('physicsScore', document.getElementById('physicsScore').value);
+        formData.append('answers', answersString);
 
         fetch(SCRIPT_URL, { method: 'POST', body: formData })
             .then(response => {
-                statusMessage.style.color = '#16a34a';
-                statusMessage.innerText = '✅ آزمون با موفقیت ثبت شد!';
-                form.reset();
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'ثبت و ارسال پاسخ‌برگ';
+                document.getElementById('statusMessage').style.color = 'green';
+                document.getElementById('statusMessage').innerText = '✅ پاسخ‌برگ ثبت شد. خسته نباشید!';
+                document.getElementById('quizForm').reset();
             })
-            .catch(error => {
-                statusMessage.style.color = '#dc2626';
-                statusMessage.innerText = '❌ خطایی رخ داد. مجدداً تلاش کنید.';
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'ثبت و ارسال پاسخ‌برگ';
-            });
+            .catch(error => alert('خطا در ارتباط با سرور!'));
     });
 </script>
 
