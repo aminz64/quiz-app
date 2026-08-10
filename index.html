@@ -3,159 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پاسخ‌برگ آنلاین</title>
+    <title>پلتفرم آزمون جامع</title>
     <style>
-        body { 
-            background-color: #f1f5f9; 
-            font-family: Tahoma, Arial, sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            padding: 20px; 
-            margin: 0;
-        }
-        .card { 
-            background: white; 
-            width: 100%; 
-            max-width: 500px; 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-        }
-        h2 { 
-            color: #1e293b; 
-            text-align: center; 
-            margin-top: 0; 
-            padding-bottom: 15px;
-            border-bottom: 2px dashed #e2e8f0;
-        }
-        
-        /* دکمه‌ها و فرم‌ها */
-        .btn { 
-            width: 100%; 
-            padding: 15px; 
-            background: #3b82f6; 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: 0.3s; 
-        }
+        body { background-color: #f8fafc; font-family: Tahoma, Arial, sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .card { background: white; width: 100%; max-width: 600px; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+        h2 { color: #0f172a; margin: 0; font-size: 20px; }
+        .consultant-name { color: #64748b; font-size: 14px; }
+        .timer { background: #fee2e2; color: #ef4444; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 18px; direction: ltr;}
+        .btn { width: 100%; padding: 15px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px;}
         .btn:hover { background: #2563eb; }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        
-        input.name-input { 
-            width: 100%; 
-            padding: 15px; 
-            border: 2px solid #cbd5e1; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            margin-bottom: 20px; 
-            box-sizing: border-box;
-            outline: none;
-            text-align: center;
-        }
-        input.name-input:focus { border-color: #3b82f6; }
-
-        /* استایل شیکِ پاسخ‌برگ حباب‌دار */
-        .q-row { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px 0; 
-            border-bottom: 1px solid #f1f5f9; 
-        }
-        .q-num { 
-            font-weight: bold; 
-            font-size: 16px; 
-            width: 70px; 
-            color: #475569; 
-        }
-        .options { 
-            display: flex; 
-            gap: 15px; 
-            direction: ltr; /* گزینه‌ها از چپ به راست مرتب شوند */
-        }
-        .option-btn {
-            width: 38px; 
-            height: 38px; 
-            border-radius: 50%; 
-            border: 2px solid #cbd5e1;
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            font-weight: bold; 
-            color: #64748b; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-        }
-        /* مخفی کردن رادیوباتن پیش‌فرض و استفاده از دایره‌های سفارشی */
+        input.name-input { width: 100%; padding: 15px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px; margin-bottom: 20px; box-sizing: border-box; text-align: center; }
+        .q-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .q-num { font-weight: bold; width: 70px; color: #475569; }
+        .options { display: flex; gap: 15px; direction: ltr; }
+        .option-btn { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #64748b; cursor: pointer; }
         input[type="radio"] { display: none; }
-        input[type="radio"]:checked + .option-btn { 
-            background: #1e293b; 
-            border-color: #1e293b; 
-            color: white; 
-        }
-
-        /* کنترل نمایش مراحل */
+        input[type="radio"]:checked + .option-btn { background: #0f172a; border-color: #0f172a; color: white; }
         #step2, #loading { display: none; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 id="examTitle">در حال ارتباط با سرور...</h2>
+        <div class="header" id="examHeader" style="display: none;">
+            <div>
+                <h2 id="examTitle">عنوان آزمون</h2>
+                <div class="consultant-name" id="consName">مشاور: </div>
+            </div>
+            <div class="timer" id="timerDisplay">00:00</div>
+        </div>
 
-        <div id="step1">
-            <p style="text-align:center; color:#64748b; margin-bottom: 25px; font-size: 14px;">
-                برای ورود به جلسه آزمون، نام و نام خانوادگی خود را وارد کنید
-            </p>
-            <input type="text" id="studentName" class="name-input" placeholder="مثلاً: محمد امین زیلابی">
-            <button class="btn" id="startBtn" disabled>شروع آزمون</button>
+        <h2 id="initMessage" style="text-align: center; color: #64748b;">در حال برقراری ارتباط...</h2>
+
+        <div id="step1" style="display: none;">
+            <input type="text" id="studentName" class="name-input" placeholder="نام و نام خانوادگی خود را وارد کنید">
+            <button class="btn" id="startBtn">شروع آزمون</button>
         </div>
 
         <div id="step2">
-            <div id="bubbleContainer" style="margin-bottom: 30px;">
-                </div>
-            <button class="btn" id="submitBtn" style="background: #10b981;">پایان آزمون و ثبت نهایی</button>
+            <div id="bubbleContainer"></div>
+            <button class="btn" id="submitBtn" style="background: #10b981;">ثبت نهایی پاسخ‌برگ</button>
         </div>
 
-        <div id="loading" style="text-align:center; font-weight:bold; color:#3b82f6; margin-top:20px; font-size: 16px;">
-            لطفاً منتظر بمانید...
-        </div>
+        <div id="loading" style="text-align:center; font-weight:bold; color:#3b82f6; margin-top:20px;"></div>
     </div>
 
     <script>
-        // ===> لینک وب‌هوک جدید گوگل شیت خود را اینجا بگذارید <===
+        // ===> لینک جدید وب‌هوک گوگل را اینجا قرار دهید <===
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0ajJTUZ1lCRJ-MNrrTrRJmaHxECTblYPVwdTRpk7nmOygDGCaCYvkG1h4L7FAejCzIA/exec';
+        
+        // استخراج ID آزمون از لینک (مثلاً ?id=1001)
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentExamId = urlParams.get('id');
         let qCount = 0;
+        let examTime = 0;
+        let timerInterval;
 
-        // 1. دریافت اطلاعات آزمون هنگام باز شدن سایت
-        fetch(SCRIPT_URL)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('examTitle').innerText = data.examName;
-                qCount = data.qCount;
-                buildBubbleSheet(qCount); // ساخت پاسخ‌برگ
-                document.getElementById('startBtn').disabled = false; // فعال شدن دکمه شروع
-            })
-            .catch(err => {
-                document.getElementById('examTitle').innerText = 'خطا در دریافت اطلاعات';
-            });
+        if (!currentExamId) {
+            document.getElementById('initMessage').innerText = 'خطا: لینک آزمون معتبر نیست.';
+        } else {
+            // دریافت اطلاعات اختصاصی همین آزمون
+            fetch(SCRIPT_URL + '?examId=' + currentExamId + '&nocache=' + new Date().getTime())
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "success") {
+                        document.getElementById('initMessage').style.display = 'none';
+                        document.getElementById('examHeader').style.display = 'flex';
+                        
+                        document.getElementById('examTitle').innerText = data.examName;
+                        document.getElementById('consName').innerText = 'مشاور: ' + data.consultantName;
+                        
+                        qCount = parseInt(data.qCount);
+                        examTime = parseInt(data.timeLimit);
+                        document.getElementById('timerDisplay').innerText = examTime + ":00";
+                        
+                        buildBubbleSheet(qCount);
+                        document.getElementById('step1').style.display = 'block';
+                    } else {
+                        document.getElementById('initMessage').innerText = 'آزمونی با این شناسه یافت نشد!';
+                    }
+                })
+                .catch(err => { document.getElementById('initMessage').innerText = 'خطای شبکه'; });
+        }
 
-        // 2. رفتن به مرحله بعد (شروع آزمون)
-        document.getElementById('startBtn').addEventListener('click', () => {
-            const nameInput = document.getElementById('studentName').value.trim();
-            if(nameInput === '') { 
-                alert('لطفاً نام خود را وارد کنید!'); 
-                return; 
-            }
-            // مخفی کردن صفحه اول و نمایش پاسخ‌برگ
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
-        });
-
-        // 3. تابع ساخت پاسخ‌برگ حباب‌دار (مثل کنکور)
+        // تابع ساخت پاسخ‌برگ
         function buildBubbleSheet(count) {
             const container = document.getElementById('bubbleContainer');
             for(let i = 1; i <= count; i++) {
@@ -173,39 +104,59 @@
             }
         }
 
-        // 4. ارسال نهایی پاسخ‌برگ به گوگل شیت
-        document.getElementById('submitBtn').addEventListener('click', () => {
-            // غیرفعال کردن دکمه برای جلوگیری از چندبار کلیک کردن
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            document.getElementById('loading').style.display = 'block';
+        // شروع تایمر و آزمون
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if(document.getElementById('studentName').value.trim() === '') return alert('نام را وارد کنید');
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            startTimer(examTime * 60);
+        });
 
-            // خواندن تمام گزینه‌های انتخاب شده
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            const display = document.getElementById('timerDisplay');
+            timerInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                if (--timer < 0) {
+                    clearInterval(timerInterval);
+                    alert('زمان آزمون به پایان رسید! پاسخ‌برگ شما به صورت خودکار ثبت می‌شود.');
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        // ارسال فرم
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            if(confirm('آیا از ثبت نهایی پاسخ‌برگ اطمینان دارید؟')) submitExam();
+        });
+
+        function submitExam() {
+            clearInterval(timerInterval);
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading').innerText = 'در حال تصحیح...';
+
             let answersStr = "";
             for(let i = 1; i <= qCount; i++) {
                 const checkedOption = document.querySelector(`input[name="q${i}"]:checked`);
                 answersStr += checkedOption ? checkedOption.value : "0";
             }
 
-            // آماده‌سازی داده‌ها برای ارسال
             const formData = new FormData();
+            formData.append('examId', currentExamId);
             formData.append('studentName', document.getElementById('studentName').value);
             formData.append('answers', answersStr);
 
-            // ارسال به سرور
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
-                .then(res => res.text())
-                .then(text => {
-                    document.getElementById('step2').style.display = 'none';
+                .then(() => {
                     document.getElementById('loading').style.color = '#10b981';
-                    document.getElementById('loading').innerText = '✅ پاسخ‌برگ شما با موفقیت تصحیح و ثبت شد. خسته نباشید!';
+                    document.getElementById('loading').innerText = '✅ خسته نباشید. پاسخ‌برگ شما ثبت شد.';
                 })
-                .catch(err => {
-                    alert('خطا در ارسال! لطفاً اتصال اینترنت خود را بررسی کنید.');
-                    submitBtn.disabled = false;
-                    document.getElementById('loading').style.display = 'none';
-                });
-        });
+                .catch(() => alert('خطا در ارسال'));
+        }
     </script>
 </body>
 </html>
