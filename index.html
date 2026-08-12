@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه آزمون هوشمند | گروه مشاوره دکتر خاکسار</title>
+    <title>سامانه جامع آزمون و کارنامه | گروه مشاوره دکتر خاکسار</title>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <style>
         :root {
-            --primary: #0f172a; --accent: #3b82f6; --bg: #f8fafc; --card: #ffffff;
+            --primary: #0f172a; --accent: #3b82f6; --bg: #f8fafc; --card: #ffffff; --success: #10b981;
         }
         body { 
             background-color: var(--bg); font-family: Vazirmatn, Tahoma, sans-serif; 
@@ -15,13 +15,18 @@
         }
         .container { width: 100%; max-width: 700px; }
         .card { 
-            background: var(--card); border-radius: 20px; padding: 35px; 
+            background: var(--card); border-radius: 20px; padding: 30px; 
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); border: 1px solid #e2e8f0;
         }
-        .brand-header { text-align: center; margin-bottom: 30px; }
+        .brand-header { text-align: center; margin-bottom: 25px; }
         .brand-header h1 { color: var(--primary); font-size: 24px; margin: 0; }
-        .brand-header p { color: var(--accent); font-weight: bold; margin: 5px 0 0; font-size: 14px; letter-spacing: 1px; }
+        .brand-header p { color: var(--accent); font-weight: bold; margin: 5px 0 0; font-size: 13px; letter-spacing: 1px; }
         
+        /* تب‌های بالای صفحه */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 25px; background: #e2e8f0; padding: 5px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 9px; font-family: inherit; font-weight: bold; cursor: pointer; background: transparent; color: #64748b; transition: 0.3s; }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+
         .exam-info-bar { 
             display: flex; justify-content: space-between; align-items: center;
             background: #f1f5f9; padding: 15px 20px; border-radius: 15px; margin-bottom: 25px;
@@ -30,32 +35,47 @@
         
         .btn { 
             width: 100%; padding: 16px; background: var(--accent); color: white; border: none; 
-            border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px;
         }
-        .btn:hover { background: var(--primary); transform: translateY(-2px); }
-        .btn:disabled { background: #94a3b8; transform: none; }
+        .btn:hover { background: var(--primary); }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .input-group { margin-bottom: 20px; text-align: right; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #334155; }
+        .input-control { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #e2e8f0; box-sizing: border-box; font-size: 15px; font-family: inherit; text-align: center; }
 
         .subject-divider {
             background: linear-gradient(90deg, #e0f2fe 0%, #ffffff 100%);
             color: #0369a1; padding: 12px 18px; border-radius: 10px; 
-            font-weight: bold; margin: 35px 0 15px; border-right: 6px solid var(--accent);
+            font-weight: bold; margin: 30px 0 15px; border-right: 6px solid var(--accent);
         }
 
-        /* استایل حباب‌های پاسخ‌برگ */
-        .q-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; border-bottom: 1px solid #f1f5f9; }
+        /* حباب پاسخ‌برگ */
+        .q-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid #f1f5f9; }
         .q-num { font-weight: bold; color: #475569; width: 60px; }
         .options { display: flex; gap: 12px; direction: ltr; }
         .option-label { cursor: pointer; }
         .option-label input { display: none; }
         .bubble { 
-            width: 42px; height: 42px; border-radius: 50%; border: 2px solid #cbd5e1;
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid #cbd5e1;
             display: flex; justify-content: center; align-items: center; font-weight: bold; color: #64748b; transition: 0.2s;
         }
-        .option-label input:checked + .bubble { background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .option-label input:checked + .bubble { background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
 
-        #step1, #step2, #loading { display: none; }
-        .alert { padding: 20px; border-radius: 12px; text-align: center; font-weight: bold; margin-top: 20px; }
+        /* کارت کارنامه */
+        .report-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 25px; margin-top: 20px; }
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .stat-box { background: white; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; text-align: center; }
+        .stat-value { font-size: 22px; font-weight: bold; color: var(--accent); margin-top: 5px; }
+        .stat-label { font-size: 13px; color: #64748b; }
+        .badge-highlight { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        .sub-breakdown { margin-top: 15px; background: white; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; }
+        .sub-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; font-size: 14px; }
+        .sub-item:last-child { border-bottom: none; }
+
+        .alert { padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; margin-top: 15px; }
         .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+        #examSection, #reportSection, #step2, #loading, #reportResult { display: none; }
     </style>
 </head>
 <body>
@@ -66,54 +86,105 @@
                 <h1>گروه مشاوره دکتر خاکسار</h1>
             </div>
 
-            <div id="initStatus" style="text-align: center; color: #64748b;">در حال احراز هویت آزمون...</div>
+            <div class="nav-tabs">
+                <button class="tab-btn active" id="btnExamTab" onclick="switchTab('exam')">📝 شرکت در آزمون</button>
+                <button class="tab-btn" id="btnReportTab" onclick="switchTab('report')">📊 مشاهده کارنامه</button>
+            </div>
 
-            <div id="examMainArea" style="display: none;">
-                <div class="exam-info-bar">
-                    <div>
-                        <h2 id="examTitle" style="margin: 0; font-size: 18px;">نام آزمون</h2>
-                        <span id="consName" style="font-size: 13px; color: #64748b;">مشاور: </span>
+            <div id="examSection" style="display: block;">
+                <div id="initStatus" style="text-align: center; color: #64748b;">در حال احراز هویت آزمون...</div>
+
+                <div id="examMainArea" style="display: none;">
+                    <div class="exam-info-bar">
+                        <div>
+                            <h2 id="examTitle" style="margin: 0; font-size: 17px;">نام آزمون</h2>
+                            <span id="consName" style="font-size: 13px; color: #64748b;">مشاور: </span>
+                        </div>
+                        <div class="timer-box" id="timerDisplay">00:00</div>
                     </div>
-                    <div class="timer-box" id="timerDisplay">00:00</div>
-                </div>
 
-                <div id="step1">
-                    <div style="margin-bottom: 20px;">
-                        <label style="display:block; margin-bottom: 8px; font-weight: bold;">نام و نام خانوادگی دانش‌آموز:</label>
-                        <input type="text" id="studentName" style="width:100%; padding:15px; border-radius:10px; border:2px solid #e2e8f0; box-sizing:border-box; font-size:16px; text-align:center;" placeholder="مثال: علی رضایی">
+                    <div id="step1">
+                        <div class="input-group">
+                            <label>نام و نام خانوادگی دانش‌آموز:</label>
+                            <input type="text" id="studentName" class="input-control" placeholder="مثال: علی رضایی">
+                        </div>
+                        <div id="timeNotice" class="alert alert-warning" style="display:none;"></div>
+                        <button class="btn" id="startBtn">شروع جلسه آزمون</button>
                     </div>
-                    <div id="timeNotice" class="alert alert-warning" style="display:none; margin-bottom: 20px;"></div>
-                    <button class="btn" id="startBtn">شروع جلسه آزمون</button>
-                </div>
 
-                <div id="step2">
-                    <div id="bubbleSheet"></div>
-                    <button class="btn" id="submitBtn" style="background: #10b981; margin-top: 40px;">پایان آزمون و ثبت نهایی</button>
+                    <div id="step2">
+                        <div id="bubbleSheet"></div>
+                        <button class="btn" id="submitBtn" style="background: var(--success); margin-top: 30px;">پایان آزمون و ثبت نهایی</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reportSection">
+                <div class="input-group">
+                    <label>کد آزمون:</label>
+                    <input type="text" id="reportExamId" class="input-control" placeholder="مثال: 1001">
+                </div>
+                <div class="input-group">
+                    <label>نام و نام خانوادگی دانش‌آموز:</label>
+                    <input type="text" id="reportStudentName" class="input-control" placeholder="دقیقاً مشابه نام ثبت‌شده در آزمون">
+                </div>
+                <button class="btn" onclick="fetchReport()">دریافت کارنامه</button>
+
+                <div id="reportResult" class="report-card">
+                    <h3 style="margin:0 0 15px 0; text-align:center; color: var(--primary);">📋 کارنامه نهایی داوطلب</h3>
+                    
+                    <div class="report-grid">
+                        <div class="stat-box badge-highlight">
+                            <div class="stat-label">تراز کل آزمون</div>
+                            <div class="stat-value" id="resTraz">-</div>
+                        </div>
+                        <div class="stat-box badge-highlight">
+                            <div class="stat-label">رتبه در آزمون</div>
+                            <div class="stat-value" id="resRank">-</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">درصد کل</div>
+                            <div class="stat-value" id="resTotalScore" style="color: var(--success);">-</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">درست / نادرست / نزده</div>
+                            <div class="stat-value" id="resStats" style="font-size: 16px; margin-top: 8px;">-</div>
+                        </div>
+                    </div>
+
+                    <div class="sub-breakdown">
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #334155;">📚 درصد به تفکیک دروس:</div>
+                        <div id="resSubjects"></div>
+                    </div>
                 </div>
             </div>
 
             <div id="loading" style="text-align:center; padding: 20px;">
-                <div style="color: #3b82f6; font-weight: bold;" id="loadingText">در حال ارسال پاسخ‌برگ...</div>
+                <div style="color: var(--accent); font-weight: bold;" id="loadingText">در حال پردازش...</div>
             </div>
         </div>
     </div>
 
     <script>
+        // ===> لینک وب‌هوک گوگل شیت خود را اینجا قرار دهید <===
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0ajJTUZ1lCRJ-MNrrTrRJmaHxECTblYPVwdTRpk7nmOygDGCaCYvkG1h4L7FAejCzIA/exec';
+        
         const urlParams = new URLSearchParams(window.location.search);
         const examId = urlParams.get('id');
         let qCount = 0, examTime = 0, timerInterval;
 
+        // مقداردهی اولیه برای آزمون
         if (!examId) {
-            document.getElementById('initStatus').innerText = '❌ خطای دسترسی: شناسه آزمون یافت نشد.';
+            document.getElementById('initStatus').innerText = '💡 جهت شرکت در آزمون، استفاده از لینک اختصاصی آزمون الزامی است. می‌توانید از بخش «مشاهده کارنامه» استفاده کنید.';
         } else {
+            document.getElementById('reportExamId').value = examId; // مقداردهی پیش‌فرض کد آزمون در بخش کارنامه
             fetch(SCRIPT_URL + '?examId=' + examId + '&nocache=' + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById('initStatus').style.display = 'none';
                     if (data.status === "not_found") {
                         document.getElementById('initStatus').style.display = 'block';
-                        document.getElementById('initStatus').innerText = '❌ آزمونی با این مشخصات وجود ندارد.';
+                        document.getElementById('initStatus').innerText = '❌ آزمونی با این شناسه یافت نشد.';
                         return;
                     }
 
@@ -124,10 +195,9 @@
                     examTime = parseInt(data.timeLimit);
                     document.getElementById('timerDisplay').innerText = examTime + ":00";
 
-                    // مدیریت بازه زمانی
                     if (data.status === "upcoming") {
                         document.getElementById('timeNotice').style.display = 'block';
-                        document.getElementById('timeNotice').innerText = '⏳ این آزمون هنوز شروع نشده است. زمان شروع: ' + data.startTime;
+                        document.getElementById('timeNotice').innerText = '⏳ آزمون هنوز شروع نشده است. شروع: ' + data.startTime;
                         document.getElementById('startBtn').disabled = true;
                     } else if (data.status === "expired") {
                         document.getElementById('timeNotice').style.display = 'block';
@@ -136,10 +206,25 @@
                     }
 
                     buildSheet(qCount, data.subjects);
-                    document.getElementById('step1').style.display = 'block';
                 });
         }
 
+        // سوئیچ بین تب‌های آزمون و کارنامه
+        function switchTab(tab) {
+            if (tab === 'exam') {
+                document.getElementById('examSection').style.display = 'block';
+                document.getElementById('reportSection').style.display = 'none';
+                document.getElementById('btnExamTab').classList.add('active');
+                document.getElementById('btnReportTab').classList.remove('active');
+            } else {
+                document.getElementById('examSection').style.display = 'none';
+                document.getElementById('reportSection').style.display = 'block';
+                document.getElementById('btnReportTab').classList.add('active');
+                document.getElementById('btnExamTab').classList.remove('active');
+            }
+        }
+
+        // ساخت حباب‌های آزمون
         function buildSheet(total, subStr) {
             const container = document.getElementById('bubbleSheet');
             let qMap = new Array(total + 1).fill("");
@@ -166,6 +251,7 @@
             }
         }
 
+        // شروع تایمر
         document.getElementById('startBtn').addEventListener('click', () => {
             if(!document.getElementById('studentName').value.trim()) return alert('لطفاً نام خود را وارد کنید');
             document.getElementById('step1').style.display = 'none';
@@ -190,17 +276,71 @@
             clearInterval(timerInterval);
             document.getElementById('step2').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
+            document.getElementById('loadingText').innerText = "در حال ارسال پاسخ‌برگ...";
             let ans = "";
             for(let i=1; i<=qCount; i++) {
                 let sel = document.querySelector(`input[name="q${i}"]:checked`);
                 ans += sel ? sel.value : "0";
             }
             const fd = new FormData();
-            fd.append('examId', examId); fd.append('studentName', document.getElementById('studentName').value); fd.append('answers', ans);
+            fd.append('examId', examId); 
+            fd.append('studentName', document.getElementById('studentName').value.trim()); 
+            fd.append('answers', ans);
+            
             fetch(SCRIPT_URL, { method: 'POST', body: fd })
                 .then(() => {
                     document.getElementById('loadingText').style.color = "#10b981";
-                    document.getElementById('loadingText').innerText = "✅ پاسخ‌برگ با موفقیت ثبت شد. خسته نباشید!";
+                    document.getElementById('loadingText').innerText = "✅ پاسخ‌برگ با موفقیت ثبت شد. می‌توانید از تب «مشاهده کارنامه» نمرات خود را پس از اعلام مشاور پیگیری کنید.";
+                });
+        }
+
+        // دریافت و نمایش کارنامه
+        function fetchReport() {
+            const eId = document.getElementById('reportExamId').value.trim();
+            const sName = document.getElementById('reportStudentName').value.trim();
+
+            if (!eId || !sName) {
+                return alert('لطفاً کد آزمون و نام و نام خانوادگی را وارد کنید.');
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loadingText').innerText = 'در حال استعلام کارنامه...';
+            document.getElementById('reportResult').style.display = 'none';
+
+            fetch(SCRIPT_URL + '?action=getReport&examId=' + encodeURIComponent(eId) + '&studentName=' + encodeURIComponent(sName) + '&nocache=' + new Date().getTime())
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
+                    if (data.status === "success") {
+                        document.getElementById('reportResult').style.display = 'block';
+                        document.getElementById('resTraz').innerText = data.traz;
+                        document.getElementById('resRank').innerText = data.rank;
+                        document.getElementById('resTotalScore').innerText = data.totalScore;
+                        document.getElementById('resStats').innerText = `✅ ${data.correct} | ❌ ${data.wrong} | ⚪ ${data.empty}`;
+
+                        // نمایش درصد به تفکیک دروس
+                        const subContainer = document.getElementById('resSubjects');
+                        subContainer.innerHTML = "";
+                        if (data.subjectBreakdown) {
+                            let parts = data.subjectBreakdown.split("|");
+                            parts.forEach(p => {
+                                if (p.trim()) {
+                                    let item = p.split(":");
+                                    subContainer.innerHTML += `
+                                        <div class="sub-item">
+                                            <span>${item[0].trim()}</span>
+                                            <span style="font-weight:bold; color:var(--accent);">${item[1].trim()}</span>
+                                        </div>`;
+                                }
+                            });
+                        }
+                    } else {
+                        alert('❌ کارنامه‌ای با این مشخصات یافت نشد.\nممکن است هنوز تراز توسط مشاور محاسبه نشده باشد یا نام/کد آزمون را اشتباه وارد کرده باشید.');
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('loading').style.display = 'none';
+                    alert('خطا در ارتباط با سرور.');
                 });
         }
     </script>
