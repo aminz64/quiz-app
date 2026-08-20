@@ -113,6 +113,11 @@
                     </div>
 
                     <div id="step2">
+                        <!-- دکمه دانلود PDF که در ابتدا مخفی است -->
+                        <a id="pdfDownloadBtn" class="btn" style="background: #8b5cf6; display: none; text-align: center; text-decoration: none; margin-bottom: 25px;" target="_blank">
+                            📥 دانلود فایل سوالات آزمون
+                        </a>
+
                         <div id="bubbleSheet"></div>
                         <button class="btn" id="submitBtn" style="background: var(--success); margin-top: 30px;">پایان آزمون و ثبت نهایی</button>
                     </div>
@@ -171,13 +176,13 @@
         
         const urlParams = new URLSearchParams(window.location.search);
         const examId = urlParams.get('id');
-        let qCount = 0, examTime = 0, timerInterval;
+        let qCount = 0, examTime = 0, timerInterval, examPdfLink = "";
 
         // مقداردهی اولیه برای آزمون
         if (!examId) {
             document.getElementById('initStatus').innerText = '💡 جهت شرکت در آزمون، استفاده از لینک اختصاصی آزمون الزامی است. می‌توانید از بخش «مشاهده کارنامه» استفاده کنید.';
         } else {
-            document.getElementById('reportExamId').value = examId; // مقداردهی پیش‌فرض کد آزمون در بخش کارنامه
+            document.getElementById('reportExamId').value = examId; 
             fetch(SCRIPT_URL + '?examId=' + examId + '&nocache=' + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
@@ -193,6 +198,7 @@
                     document.getElementById('consName').innerText = 'مشاور: ' + data.consultantName;
                     qCount = parseInt(data.qCount);
                     examTime = parseInt(data.timeLimit);
+                    examPdfLink = data.pdfLink || ""; // دریافت لینک پی‌دی‌اف از سرور
                     document.getElementById('timerDisplay').innerText = examTime + ":00";
 
                     if (data.status === "upcoming") {
@@ -251,11 +257,18 @@
             }
         }
 
-        // شروع تایمر
+        // شروع تایمر و نمایش لینک دانلود
         document.getElementById('startBtn').addEventListener('click', () => {
             if(!document.getElementById('studentName').value.trim()) return alert('لطفاً نام خود را وارد کنید');
             document.getElementById('step1').style.display = 'none';
             document.getElementById('step2').style.display = 'block';
+            
+            // نمایش دکمه دانلود فقط در صورت وجود لینک در دیتابیس
+            if (examPdfLink && examPdfLink !== "") {
+                document.getElementById('pdfDownloadBtn').href = examPdfLink;
+                document.getElementById('pdfDownloadBtn').style.display = 'block';
+            }
+            
             startTimer(examTime * 60);
         });
 
