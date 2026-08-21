@@ -274,10 +274,24 @@
 
         function startTimer(sec) {
             const disp = document.getElementById('timerDisplay');
+            
+            // ثبت زمان دقیق پایان بر اساس ساعت واقعی سیستم (به میلی‌ثانیه)
+            const endTime = Date.now() + (sec * 1000);
+            
             timerInterval = setInterval(() => {
-                let m = Math.floor(sec / 60), s = sec % 60;
+                const now = Date.now();
+                // محاسبه ثانیه‌های باقی‌مانده از اختلاف زمان پایان و زمان حال
+                const remaining = Math.floor((endTime - now) / 1000);
+                
+                if (remaining < 0) { 
+                    clearInterval(timerInterval); 
+                    submit(); 
+                    return; // توقف اجرای کد
+                }
+                
+                let m = Math.floor(remaining / 60);
+                let s = remaining % 60;
                 disp.innerText = (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
-                if (--sec < 0) { clearInterval(timerInterval); submit(); }
             }, 1000);
         }
 
