@@ -173,14 +173,12 @@
     <script>
         // ===> لینک وب‌هوک گوگل شیت خود را اینجا قرار دهید <===
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0ajJTUZ1lCRJ-MNrrTrRJmaHxECTblYPVwdTRpk7nmOygDGCaCYvkG1h4L7FAejCzIA/exec';
-        
         const urlParams = new URLSearchParams(window.location.search);
         const examId = urlParams.get('id');
         let qCount = 0, examTime = 0, timerInterval, examPdfLink = "";
 
-        // مقداردهی اولیه برای آزمون
         if (!examId) {
-            document.getElementById('initStatus').innerText = '💡 جهت شرکت در آزمون، استفاده از لینک اختصاصی آزمون الزامی است. می‌توانید از بخش «مشاهده کارنامه» استفاده کنید.';
+            document.getElementById('initStatus').innerText = '💡 جهت شرکت در آزمون، استفاده از لینک اختصاصی آزمون الزامی است.';
         } else {
             document.getElementById('reportExamId').value = examId; 
             fetch(SCRIPT_URL + '?examId=' + examId + '&nocache=' + new Date().getTime())
@@ -198,12 +196,12 @@
                     document.getElementById('consName').innerText = 'مشاور: ' + data.consultantName;
                     qCount = parseInt(data.qCount);
                     examTime = parseInt(data.timeLimit);
-                    examPdfLink = data.pdfLink || ""; // دریافت لینک پی‌دی‌اف از سرور
+                    examPdfLink = data.pdfLink || ""; 
                     document.getElementById('timerDisplay').innerText = examTime + ":00";
 
                     if (data.status === "upcoming") {
                         document.getElementById('timeNotice').style.display = 'block';
-                        document.getElementById('timeNotice').innerText = '⏳ آزمون هنوز شروع نشده است. شروع: ' + data.startTime;
+                        document.getElementById('timeNotice').innerText = '⏳ آزمون هنوز شروع نشده است.';
                         document.getElementById('startBtn').disabled = true;
                     } else if (data.status === "expired") {
                         document.getElementById('timeNotice').style.display = 'block';
@@ -215,7 +213,6 @@
                 });
         }
 
-        // سوئیچ بین تب‌های آزمون و کارنامه
         function switchTab(tab) {
             if (tab === 'exam') {
                 document.getElementById('examSection').style.display = 'block';
@@ -230,7 +227,6 @@
             }
         }
 
-        // ساخت حباب‌های آزمون
         function buildSheet(total, subStr) {
             const container = document.getElementById('bubbleSheet');
             let qMap = new Array(total + 1).fill("");
@@ -255,38 +251,69 @@
                         </div>
                     </div>`;
             }
+
+            // سیستم بازیابی اطلاعات پس از رفرش
+            for(let i = 1; i <= total; i++) {
+                let savedAns = localStorage.getItem(`exam_${examId}_q${i}`);
+                if (savedAns) {
+                    let opt = document.querySelector(`input[name="q${i}"][value="${savedAns}"]`);
+                    if(opt) opt.checked = true;
+                }
+
+                let options = document.querySelectorAll(`input[name="q${i}"]`);
+                options.forEach(opt => {
+                    opt.addEventListener('change', (e) => {
+                        localStorage.setItem(`exam_${examId}_q${i}`, e.target.value);
+                    });
+                });
+            }
+
+            // بازگردانی خودکار به آزمون در صورت رفرش صفحه
+            let savedEndTime = localStorage.getItem(`exam_${examId}_endTime`);
+            if (savedEndTime && parseInt(savedEndTime) > Date.now()) {
+                document.getElementById('studentName').value = localStorage.getItem(`exam_${examId}_name`) || "";
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2').style.display = 'block';
+                if (examPdfLink && examPdfLink !== "") {
+                    document.getElementById('pdfDownloadBtn').href = examPdfLink;
+                    document.getElementById('pdfDownloadBtn').style.display = 'block';
+                }
+                startTimer(examTime * 60);
+            }
         }
 
-        // شروع تایمر و نمایش لینک دانلود
         document.getElementById('startBtn').addEventListener('click', () => {
-            if(!document.getElementById('studentName').value.trim()) return alert('لطفاً نام خود را وارد کنید');
+            let sName = document.getElementById('studentName').value.trim();
+            if(!sName) return alert('لطفاً نام خود را وارد کنید');
+            
+            localStorage.setItem(`exam_${examId}_name`, sName);
             document.getElementById('step1').style.display = 'none';
             document.getElementById('step2').style.display = 'block';
             
-            // نمایش دکمه دانلود فقط در صورت وجود لینک در دیتابیس
             if (examPdfLink && examPdfLink !== "") {
                 document.getElementById('pdfDownloadBtn').href = examPdfLink;
                 document.getElementById('pdfDownloadBtn').style.display = 'block';
             }
-            
             startTimer(examTime * 60);
         });
 
         function startTimer(sec) {
             const disp = document.getElementById('timerDisplay');
+            let endTime = localStorage.getItem(`exam_${examId}_endTime`);
             
-            // ثبت زمان دقیق پایان بر اساس ساعت واقعی سیستم (به میلی‌ثانیه)
-            const endTime = Date.now() + (sec * 1000);
+            if (!endTime) {
+                endTime = Date.now() + (sec * 1000);
+                localStorage.setItem(`exam_${examId}_endTime`, endTime);
+            }
             
             timerInterval = setInterval(() => {
                 const now = Date.now();
-                // محاسبه ثانیه‌های باقی‌مانده از اختلاف زمان پایان و زمان حال
                 const remaining = Math.floor((endTime - now) / 1000);
                 
-                if (remaining < 0) { 
+                if (remaining <= 0) { 
                     clearInterval(timerInterval); 
                     submit(); 
-                    return; // توقف اجرای کد
+                    return; 
                 }
                 
                 let m = Math.floor(remaining / 60);
@@ -304,11 +331,13 @@
             document.getElementById('step2').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
             document.getElementById('loadingText').innerText = "در حال ارسال پاسخ‌برگ...";
+            
             let ans = "";
             for(let i=1; i<=qCount; i++) {
                 let sel = document.querySelector(`input[name="q${i}"]:checked`);
                 ans += sel ? sel.value : "0";
             }
+            
             const fd = new FormData();
             fd.append('examId', examId); 
             fd.append('studentName', document.getElementById('studentName').value.trim()); 
@@ -316,19 +345,21 @@
             
             fetch(SCRIPT_URL, { method: 'POST', body: fd })
                 .then(() => {
+                    // پاکسازی حافظه پس از ثبت موفقیت‌آمیز
+                    for(let i=1; i<=qCount; i++) localStorage.removeItem(`exam_${examId}_q${i}`);
+                    localStorage.removeItem(`exam_${examId}_endTime`);
+                    localStorage.removeItem(`exam_${examId}_name`);
+                    
                     document.getElementById('loadingText').style.color = "#10b981";
-                    document.getElementById('loadingText').innerText = "✅ پاسخ‌برگ با موفقیت ثبت شد. می‌توانید از تب «مشاهده کارنامه» نمرات خود را پس از اعلام مشاور پیگیری کنید.";
+                    document.getElementById('loadingText').innerText = "✅ پاسخ‌برگ با موفقیت ثبت شد.";
                 });
         }
 
-        // دریافت و نمایش کارنامه
+        // تابع استعلام کارنامه (بدون تغییر)
         function fetchReport() {
             const eId = document.getElementById('reportExamId').value.trim();
             const sName = document.getElementById('reportStudentName').value.trim();
-
-            if (!eId || !sName) {
-                return alert('لطفاً کد آزمون و نام و نام خانوادگی را وارد کنید.');
-            }
+            if (!eId || !sName) return alert('لطفاً کد آزمون و نام خود را وارد کنید.');
 
             document.getElementById('loading').style.display = 'block';
             document.getElementById('loadingText').innerText = 'در حال استعلام کارنامه...';
@@ -345,24 +376,18 @@
                         document.getElementById('resTotalScore').innerText = data.totalScore;
                         document.getElementById('resStats').innerText = `✅ ${data.correct} | ❌ ${data.wrong} | ⚪ ${data.empty}`;
 
-                        // نمایش درصد به تفکیک دروس
                         const subContainer = document.getElementById('resSubjects');
                         subContainer.innerHTML = "";
                         if (data.subjectBreakdown) {
-                            let parts = data.subjectBreakdown.split("|");
-                            parts.forEach(p => {
+                            data.subjectBreakdown.split("|").forEach(p => {
                                 if (p.trim()) {
                                     let item = p.split(":");
-                                    subContainer.innerHTML += `
-                                        <div class="sub-item">
-                                            <span>${item[0].trim()}</span>
-                                            <span style="font-weight:bold; color:var(--accent);">${item[1].trim()}</span>
-                                        </div>`;
+                                    subContainer.innerHTML += `<div class="sub-item"><span>${item[0].trim()}</span><span style="font-weight:bold; color:var(--accent);">${item[1].trim()}</span></div>`;
                                 }
                             });
                         }
                     } else {
-                        alert('❌ کارنامه‌ای با این مشخصات یافت نشد.\nممکن است هنوز تراز توسط مشاور محاسبه نشده باشد یا نام/کد آزمون را اشتباه وارد کرده باشید.');
+                        alert('❌ کارنامه‌ای یافت نشد.');
                     }
                 })
                 .catch(err => {
